@@ -39,7 +39,7 @@ class Topology:
         self.spofs = Spofs()
         # use spof_list to only store the fiber_name, easy to do checking
         self.spof_list = []
-        self.fiber_from_fiber = set()
+        self.fiber_from_fiber = set() # repeated elements will be removed
         self.fiber_from_lease = set()
 
         # used for handling multiple edges between two nodes
@@ -108,15 +108,16 @@ class Topology:
         fiber_node_set = set()
         fiber_name_set = set()
 
-        for index, row in df.iterrows():
+        for index, row in df.iterrows(): # index: return the index number of row; each info in row has a name
             #register node
-            self.optic.register_node(row['src'])
+            self.optic.register_node(row['src']) # store node's name
             self.optic.register_node(row['dst'])
-            self.fiber_from_fiber.add(row['name'])
+            self.fiber_from_fiber.add(row['name']) # store fiber's name
             # register fiber
             self.optic.register_fiber(row['name'],self.optic.get_node_by_name(row['src']),self.optic.get_node_by_name(row['dst']),\
                 length=int(row['rtt']),lease_flag=False,max_fp=int(row['max_fp']),spectrum=int(row['spectrum_size_ghz_per_fp']))
 
+            # odering by ascii codes?
             src_name = min(row['src'], row['dst'])
             dst_name = max(row['src'], row['dst'])
 
@@ -229,7 +230,7 @@ class Topology:
                 optic_node_pair_set.add(optic_pair)
 
             # set the cost of link: sum of the length of the fiber
-            l3_link_cost = sum([self.optic.fibers[fiber].length for fiber in fiber_map_spectrum])
+            l3_link_cost = sum([self.optic.fibers[fiber].length for fiber in fiber_map_spectrum]) # fiber is k
 
             src_name = min(row['src'], row['dst'])
             dst_name = max(row['src'], row['dst'])
@@ -244,7 +245,7 @@ class Topology:
             except:
                 self.od_pair_map_link_name[od_pair] = [row['name']]
 
-            optic_set = frozenset(fiber_map_spectrum.keys())
+            optic_set = frozenset(fiber_map_spectrum.keys()) # frozenset cannot be changed in python 
             assert(optic_set not in optic_set)
             self.l3_link_optics_set.add(optic_set)
 
@@ -377,6 +378,9 @@ class Topology:
         print("# of flows:{}".format(len(self.tm.flows)))
 
     def import_spof_from_file(self, file_path, simplified_spof=-1):
+        """
+        seems to be the failure scenarios
+        """
         df = pd.read_excel(file_path, sheet_name="Spofs")
 
         for index, row in df.iterrows():
@@ -389,8 +393,9 @@ class Topology:
             self.spof_list.append(fiber_name_list)
 
         print("# of spofs:{}".format(len(self.spof_list)))
+        # the scenarios that there are multiple fibers are disconnected simultaneously
 
-        self.add_single_fiber_failure_and_no_failure()
+        # self.add_single_fiber_failure_and_no_failure() # the scenarios that only one fiber is disconnected and the scenario that there is no disconnected event
         print("# of spofs:{} after add single fiber failure and no failure state".format(len(self.spof_list)))
 
     def add_single_fiber_failure_and_no_failure(self):

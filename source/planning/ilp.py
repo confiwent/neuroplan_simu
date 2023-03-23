@@ -16,12 +16,15 @@ class ILP(object):
     def __init__(self, topo):
         self.topo = topo
         self.cost_opt = None
+        self.opt_sol = None
+        self.graph = None
 
-    def run_ilp(self, subopt_sol=None, delta_bw=100, relax_factor=1, mipgapabs=5e-2):
+    def run_ilp(self, subopt_sol=None, delta_bw=500, relax_factor=1, mipgapabs=5e-2):
         ilp_solve_limit = -1
 
         non_direct_graph, init_cost = self.topo.ip.generate_non_direction_graph(1, subopt_sol, relax_factor)
         fiber_info = {}
+        self.graph = non_direct_graph
         for fiber_name, fiber_inst in self.topo.optic.fibers.items():
             if fiber_inst.lease_flag:
                 max_spectrum = 0
@@ -43,6 +46,7 @@ class ILP(object):
         
         print("opt_cost:{}".format(cost_opt), flush=True)
         self.cost_opt = cost_opt
+        self.opt_sol = opt_sol
         print(dict(sorted(opt_sol.items(), key=lambda item: item[1], reverse=True)), flush=True)
     
     def run_ilp_heuristic(self, subopt_sol=None, delta_bw=1600, relax_factor=1, spof_group_size=10):

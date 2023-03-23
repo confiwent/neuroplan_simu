@@ -86,7 +86,7 @@ class Network:
     # generate non direction graph, used to perform a complete ILP approach
     # max_cstr_sol is used to take the second step for RL approach
     def generate_non_direction_graph(self, adjust_factor=1.0, max_cstr_sol=None, relax_factor=1):
-        graph = nx.MultiGraph()
+        graph = nx.Graph() # non-directed graph, allow multiple edeges
         init_cost = 0
         for link_name, link in self.links.items():
 

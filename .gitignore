@@ -7,6 +7,13 @@
 # Mac
 *.DS_Store
 
+
+# Dataset
+source/data/Garr199905/*
+source/data/NEW_Janetbackbone/*
+source/data/signals/*
+source/data/topo_files/*
+
 # Configuration files
 .env
 .vscode

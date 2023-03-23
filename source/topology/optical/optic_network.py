@@ -8,7 +8,7 @@ class OpticNetwork:
         self.fibers = {}    # Set of OpticFiber objects
 
     def register_node(self, node_name):
-        self.nodes[node_name] = OpticNode(node_name)
+        self.nodes[node_name] = OpticNode(node_name) # just record the name
 
     def get_node_by_name(self, node_name):
         return self.nodes[node_name]
