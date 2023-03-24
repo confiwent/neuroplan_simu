@@ -24,7 +24,7 @@ source/results/*
 
 # Gurobi solver related
 *.log
-*.so
+# *.so
 *.lp
 
 # data and model

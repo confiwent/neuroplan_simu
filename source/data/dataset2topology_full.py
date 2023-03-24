@@ -62,7 +62,7 @@ def process_graph(file_path):
                     links_name[src][dst] = 'Link_' + str(idx)
                     links_bw[src][dst] = bw
                     if (src, dst) not in links_ori:
-                        links_rtt[src][dst] = 3
+                        links_rtt[src][dst] = 1
                     else:
                         links_rtt[src][dst] = 1
                     Gbase.add_edge(src, dst)
@@ -96,7 +96,7 @@ def process_leases(links_name, links_bw, links_rtt):
             info.append('N'+str(dst)) # destination node
             info.append(int(math.ceil(links_rtt[src][dst]))) # rtt length
             info.append(int(0)) # minimal bandwidth
-            info.append(int(links_bw[src][dst]))
+            info.append(int(links_bw[src][dst]/1000.))
             # info.append(int(100000))
             data.append(info)
     leases_df = pd.DataFrame(data, columns=['name', 'src', 'dst', 'rtt', 'min_capacity_gbps', 'max_capacity_gbps'])
@@ -129,7 +129,7 @@ def process_l3Links(links_name, links_bw, links_rtt):
         info.append('N'+str(od[1])) # destination node
         info.append(int(0)) # min_capacity
         info.append(int(10)) # min_cap <= final_capacity <= max_capacity
-        info.append(int(links_bw[src][dst])) # max_capacity
+        info.append(int(links_bw[src][dst]/1000.)) # max_capacity
         # info.append(int(5000)) # max_capacity
         info.append(int(0)) #igp
         info.append(links_name[od[0]][od[1]] + ':' + str(5)) # fiber_name_map_spectrum
@@ -153,15 +153,17 @@ def get_traffic_matrix(traffic_file):
             info.append('N' + str(camps[1])) # source 
             info.append('N' + str(camps[2])) # destination
             info.append('BRONZE') # cos
-            info.append(int(np.floor(float(camps[3])))) # capacity
+            info.append(float(float(camps[3])/1000.)) # capacity
             tm.append(info)
     # tm = sample(tm, 385)
     tm_df = pd.DataFrame(tm, columns=['name', 'src', 'dst', 'cos', 'capacity_gbps'])
     return tm_df
 
-# def load_topo_info(tm_idx):
-def main():
-    graph_file_path = './source/data/NEW_Janetbackbone/ALL/Janetbackbone.graph'
+def load_topo_info(tm_idx):
+# def main():
+    network_name = 'Claranet'
+    graph_file_path = './source/data/' + str(network_name) + '/' + str(network_name) + '.graph'
+    # graph_file_path = './source/data/NEW_Janetbackbone/ALL/Janetbackbone.graph'
     # graph_file_path = './data/NEW_Janetbackbone/ALL/Janetbackbone.graph'
     # graph_file_path = './Garr199905/Garr199905.graph'
     # graph_file_path = './NEW_Janetbackbone/ALL/Janetbackbone.graph'
@@ -179,16 +181,18 @@ def main():
 
     ## traffic matrix/flows
     # tm_file_path = './source/data/Garr199905/TM/Garr199905.0.demands' #.0.demands
-    tm_file_path = './source/data/NEW_Janetbackbone/ALL/TM/Janetbackbone.'
+    # tm_file_path = './source/data/NEW_Janetbackbone/ALL/TM/Janetbackbone.'
     # tm_file_path = './data/NEW_Janetbackbone/ALL/TM/Janetbackbone.'
-    tm_file = tm_file_path + str(0) + '.demands'
+    tm_file_path = './source/data/' + str(network_name) + '/TM/' + str(network_name) 
+    tm_file = tm_file_path + '.' + str(tm_idx) + '.demands'
     flows_df = get_traffic_matrix(tm_file)
 
     spof_list = []
     spof_df = pd.DataFrame(spof_list, columns=['fiber_names', 'cos_to_protect'])
 
-    dataset_path = './source/data/Topo_syth_Janetbackbone.xlsx'
-    # dataset_path = './data/topo_files/Topo_syth_Janetbackbone_tm_' + str(tm_idx) + '.xlsx'
+    # dataset_path = './source/data/Topo_syth_Janetbackbone.xlsx'
+    # dataset_path = './source/data/topo_files/Topo_syth_Janetbackbone_tm_' + str(tm_idx) + '.xlsx'
+    dataset_path = './source/data/topo_files/Topo_syth_' + str(network_name) +'_tm_' + str(tm_idx) + '.xlsx'
 
     with pd.ExcelWriter(dataset_path) as writer:
         lease_df.to_excel(writer, sheet_name='Leases')
@@ -197,10 +201,10 @@ def main():
         flows_df.to_excel(writer, sheet_name='Flows')
         spof_df.to_excel(writer, sheet_name='Spofs')
 
-    # return dataset_path
+    return dataset_path
 
     # Flows_set = set()
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

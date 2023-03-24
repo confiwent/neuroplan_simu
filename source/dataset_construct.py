@@ -6,12 +6,13 @@ from networkx.readwrite import json_graph
 import matplotlib.pyplot as plt
 import math
 from random import sample
-from data.dataset2topology import load_topo_info
+from data.dataset2topology_full import load_topo_info
 
 from planning.ilp import ILP
 from topology.topology import Topology
 
 TM_NUM =10
+BPS_NORM_FACTOR = 1000
 
 def read_topo(tp_path, adjust_factor_in=None):
     """ load the datasets of network topology and traffic matrix from the excel
@@ -58,7 +59,7 @@ def construct_node_features(graph, traffic_file):
                 attribute.append(0)
             else:
                 attribute.append(tm_raw[src][dst])
-        graph.add_node(src, attr_data = attribute)
+        graph.add_node(src, feature = attribute)
 
     return graph
 
@@ -74,7 +75,7 @@ def main():
         
         # opt_sol = ilp_solver.opt_sol # dict
         ## load solution file
-        sol_file_path = './source/ilp_sol.txt'
+        sol_file_path = './ilp_sol.txt'
         sol_dict = json.load(open(sol_file_path))
         ## load undirected ip graph
         ip_graph = ilp_solver.graph
@@ -82,7 +83,7 @@ def main():
         #     link_idx = int(key)
         for edge in ip_graph.edges():
             ip_name = ip_graph[edge[0]][edge[1]]['name']
-            ip_graph[edge[0]][edge[1]]['capacity'] = int(sol_dict[ip_name])
+            ip_graph[edge[0]][edge[1]]['capacity'] = float(sol_dict[ip_name])
 
 
         ### add node features

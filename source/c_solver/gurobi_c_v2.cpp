@@ -357,11 +357,11 @@ std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph,
         if (max_delta_step >= 0) {
             model.addConstr(link_delta_var <= max_delta_step);
         }
-        model.addConstr(link_exit_var >= link_delta_var/10000000);
+        model.addConstr(link_exit_var >= link_delta_var/200);
         
         int link_cost = stod(std::string(py::str(temp["cost"])));
         // int fiber_cost = std::min(1, link_delta_var);
-        obj += link_cost * step_size * link_delta_var + 1000 * link_exit_var;
+        obj += link_cost * step_size * link_delta_var + 100 * link_exit_var;
         // fiber constraints related
         for (auto & fiber_item : py::dict(temp["fiber_map_spectrum"])) {
             std::string fiber_name = std::string(py::str(fiber_item.first));
