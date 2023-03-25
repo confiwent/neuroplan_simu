@@ -11,7 +11,7 @@ from data.dataset2topology_full import load_topo_info
 from planning.ilp import ILP
 from topology.topology import Topology
 
-TM_NUM =10
+TM_NUM =50
 BPS_NORM_FACTOR = 1000
 
 def read_topo(tp_path, adjust_factor_in=None):
@@ -47,10 +47,10 @@ def construct_node_features(graph, traffic_file):
     tm_raw = {}
     for index, row in df.iterrows():
         try: 
-            tm_raw[row['src']][row['dst']] = math.ceil(float(row['capacity_gbps']))
+            tm_raw[row['src']][row['dst']] = float(row['capacity_gbps'])
         except:
             tm_raw[row['src']] = {}
-            tm_raw[row['src']][row['dst']] = math.ceil(float(row['capacity_gbps']))
+            tm_raw[row['src']][row['dst']] = float(row['capacity_gbps'])
     
     for src in tm_raw:
         attribute = []
@@ -64,19 +64,24 @@ def construct_node_features(graph, traffic_file):
     return graph
 
 def main():
+    graph_list = []
     for tm_idx in range(TM_NUM):
         data_path = load_topo_info(tm_idx)
         adjust_factor_in = 1
         alg = "ILP"
         print(f'\n========== Fig8 start, {tm_idx}-{adjust_factor_in}, alg:{alg} ==========\n')
         ilp_solver = ILP(topo=read_topo(data_path, adjust_factor_in=adjust_factor_in))
-        ilp_solver.run_ilp()
+        ilp_solver.run_ilp(delta_bw=2, ilp_solve_limit=1000, mipgap=0.1)
         print(f'========== Topo: A-{adjust_factor_in}, result: {ilp_solver.cost_opt} =========\n')
         
         # opt_sol = ilp_solver.opt_sol # dict
         ## load solution file
         sol_file_path = './ilp_sol.txt'
-        sol_dict = json.load(open(sol_file_path))
+        try:
+            sol_dict = json.load(open(sol_file_path))
+            os.system('rm ' + sol_file_path)
+        except:
+            continue # the solution of current ilp problem is infeasible
         ## load undirected ip graph
         ip_graph = ilp_solver.graph
         # for key in opt_sol:
@@ -90,6 +95,7 @@ def main():
         ip_graph = construct_node_features(ip_graph, data_path)
 
         ## save graph signals
+        graph_list.append(ip_graph)
         # graph_dict = nx.to_dict_of_dicts(ip_graph)
         graph_dict = json_graph.node_link_data(ip_graph)
         save_file = './source/data/signals/graph_signal_' + str(tm_idx) + '.json'
@@ -98,6 +104,12 @@ def main():
             # pickle.dump(graph_dict, f)
             f.write(json.dumps(graph_dict))
         print(f'========== Graph signal: signal_{tm_idx} has been saved! =========\n')
+    
+    # save dataset for graph signals
+    file_path_t = './source/data/Claranet/raw/Claranet.pkl'
+    with open(file_path_t, 'wb') as f:
+            pickle.dump(obj=graph_list, file=f, protocol=pickle.HIGHEST_PROTOCOL)
+    print("Saved dataset for diffusion!!")
 
 
 if __name__ == '__main__':

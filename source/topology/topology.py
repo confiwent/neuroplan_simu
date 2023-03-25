@@ -365,7 +365,8 @@ class Topology:
             assert((row['src'], row['dst'], row['cos']) not in flow_identifier)
 
             flow_identifier.add((row['src'], row['dst'], row['cos']))
-            adjust_flow_size = math.ceil(float(row['capacity_gbps']))
+            # adjust_flow_size = math.ceil(float(row['capacity_gbps']))
+            adjust_flow_size = float(row['capacity_gbps'])
             
             self.tm.register_flow(row['name'], self.ip.get_router_by_name(row['src']), self.ip.get_router_by_name(row['dst']), \
                 adjust_flow_size, row['cos'])

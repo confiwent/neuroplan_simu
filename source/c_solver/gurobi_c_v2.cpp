@@ -280,14 +280,16 @@ std::tuple<bool, int> check(py::object graph, py::list failures, py::dict traffi
 }
 
 std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph, py::list failures, py::dict steady_tm, py::dict failures_tm, py::dict fibers,
-    py::dict node_stub, py::float_ load_factor, unsigned int step_size, long int timelimit, py::float_ mipgapabs){
+    py::dict node_stub, py::float_ load_factor, unsigned int step_size, long int timelimit, py::float_ mipgap){
 
     // Create an environment
     GRBEnv env = GRBEnv();
     if (timelimit > 0) {
         env.set(GRB_DoubleParam_TimeLimit, timelimit);
     }
-    env.set(GRB_DoubleParam_MIPGapAbs, float(mipgapabs));
+    // env.set(GRB_DoubleParam_MIPGapAbs, float(mipgapabs));
+    env.set(GRB_DoubleParam_MIPGap, float(mipgap));
+    
 
     // Create an empty model
     GRBModel model = GRBModel(env);
@@ -343,7 +345,7 @@ std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph,
         
         std::string link_name = std::string(py::str(temp["name"]));
         GRBVar link_delta_var = model.addVar(0, GRB_INFINITY, 0, GRB_INTEGER, link_name);
-        GRBVar link_exit_var = model.addVar(0, 1, 0, GRB_INTEGER, link_name);
+        GRBVar link_exit_var = model.addVar(0, 1, 0, GRB_BINARY, link_name);
         link_map_var[link_name] = link_delta_var;
         std::string src_str = std::string(py::str(edge[0]));
         std::string dst_str = std::string(py::str(edge[1]));
@@ -357,11 +359,11 @@ std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph,
         if (max_delta_step >= 0) {
             model.addConstr(link_delta_var <= max_delta_step);
         }
-        model.addConstr(link_exit_var >= link_delta_var/200);
+        model.addConstr(link_exit_var >= link_delta_var/500);
         
         int link_cost = stod(std::string(py::str(temp["cost"])));
         // int fiber_cost = std::min(1, link_delta_var);
-        obj += link_cost * step_size * link_delta_var + 100 * link_exit_var;
+        obj += link_cost * step_size * link_delta_var + 20 * link_exit_var;
         // fiber constraints related
         for (auto & fiber_item : py::dict(temp["fiber_map_spectrum"])) {
             std::string fiber_name = std::string(py::str(fiber_item.first));
@@ -619,6 +621,33 @@ std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph,
     int sum_delta_capa = 0;
     std::unordered_map<int, int> opt_sol;
     if(model.get(GRB_IntAttr_Status) == GRB_OPTIMAL) {
+        std::cout << "Obj: " << model.get(GRB_DoubleAttr_ObjVal) << std::endl;
+        std::string sol_dict = "{";    
+        // print the solution
+        for(auto & edge_it: py::list(g.attr("edges"))) {
+            py::tuple edge = py::tuple(py::reinterpret_borrow<py::object>(edge_it));
+            py::dict temp = get_edge_data(*edge);
+            std::string link_name = std::string(py::str(temp["name"]));
+
+            int link_capa = stod(std::string(py::str(temp["capacity"])));
+            int link_idx = stod(std::string(py::str(temp["idx"])));
+            int var_value = round(link_map_var[link_name].get(GRB_DoubleAttr_X));
+            if (var_value > 0) {
+                sum_delta_capa += step_size*var_value;
+                opt_sol[link_idx] = var_value;
+            }
+            int link_final_capa = link_capa + step_size*var_value;
+            sol_dict += "\"" + link_name + "\":" + std::to_string(link_final_capa) + ", ";
+        }
+        sol_dict = sol_dict.substr(0, sol_dict.size()-2) + "}";
+        std::ofstream ilp_sol("ilp_sol.txt");
+        ilp_sol << sol_dict;
+        ilp_sol.close();
+        std::cout << "sum_delta_capa: " << sum_delta_capa << std::endl;
+        return std::make_tuple(model.get(GRB_DoubleAttr_ObjVal), sum_delta_capa, opt_sol);
+    }
+    else if (model.get(GRB_IntAttr_Status) == GRB_TIME_LIMIT) {
+        std::cout << "don't get the GRB_OPTIMAL:" << model.get(GRB_IntAttr_Status) <<std::endl;
         std::cout << "Obj: " << model.get(GRB_DoubleAttr_ObjVal) << std::endl;
         std::string sol_dict = "{";    
         // print the solution

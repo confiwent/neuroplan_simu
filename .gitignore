@@ -24,8 +24,10 @@ source/results/*
 
 # Gurobi solver related
 *.log
-# *.so
+*.so
 *.lp
+*.demands
+*.graph
 
 # data and model
 fb_data_anon*

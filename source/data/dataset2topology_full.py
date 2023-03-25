@@ -134,6 +134,7 @@ def process_l3Links(links_name, links_bw, links_rtt):
         info.append(int(0)) #igp
         info.append(links_name[od[0]][od[1]] + ':' + str(5)) # fiber_name_map_spectrum
         data.append(info)
+    # data = sample(data, 70)
     iplinks_df = pd.DataFrame(data, columns=['name', 'src', 'dst', 'min_capacity_gbps', 'final_capacity_gbps', 'max_capacity_gbps', 'igp', 'fiber_name_map_spectrum'])
     return iplinks_df
 
@@ -155,7 +156,7 @@ def get_traffic_matrix(traffic_file):
             info.append('BRONZE') # cos
             info.append(float(float(camps[3])/1000.)) # capacity
             tm.append(info)
-    # tm = sample(tm, 385)
+    # tm = sample(tm, 400)
     tm_df = pd.DataFrame(tm, columns=['name', 'src', 'dst', 'cos', 'capacity_gbps'])
     return tm_df
 
