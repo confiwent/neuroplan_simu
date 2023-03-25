@@ -356,6 +356,7 @@ std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph,
         complete_node_pair.insert(std::make_pair(src_str, dst_str));
         complete_node_pair.insert(std::make_pair(dst_str, src_str));
 
+        // constraints for optimizing from the initial solution (maybe infeasible?)
         if (max_delta_step >= 0) {
             model.addConstr(link_delta_var <= max_delta_step);
         }
