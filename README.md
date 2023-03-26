@@ -1,3 +1,7 @@
+
+# Dataset 
+### __pickle__ should be used with same python version, i.e., the file generated with python=3.7 cannot be loaded with python=3.8
+
 ## 0. Introduction
 This repository contains the source code for our SIGCOMM'21 paper "Network Planning with Deep Reinforcement Learning".
 ### Notes

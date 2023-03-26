@@ -647,7 +647,7 @@ std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph,
         std::cout << "sum_delta_capa: " << sum_delta_capa << std::endl;
         return std::make_tuple(model.get(GRB_DoubleAttr_ObjVal), sum_delta_capa, opt_sol);
     }
-    else if (model.get(GRB_IntAttr_Status) == GRB_TIME_LIMIT) {
+    else if (model.get(GRB_IntAttr_Status) == 9) {
         std::cout << "don't get the GRB_OPTIMAL:" << model.get(GRB_IntAttr_Status) <<std::endl;
         std::cout << "Obj: " << model.get(GRB_DoubleAttr_ObjVal) << std::endl;
         std::string sol_dict = "{";    

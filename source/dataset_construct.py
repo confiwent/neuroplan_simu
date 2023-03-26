@@ -11,7 +11,7 @@ from data.dataset2topology_full import load_topo_info
 from planning.ilp import ILP
 from topology.topology import Topology
 
-TM_NUM =50
+TM_NUM =150
 BPS_NORM_FACTOR = 1000
 
 def read_topo(tp_path, adjust_factor_in=None):
@@ -104,12 +104,17 @@ def main():
             # pickle.dump(graph_dict, f)
             f.write(json.dumps(graph_dict))
         print(f'========== Graph signal: signal_{tm_idx} has been saved! =========\n')
+
     
     # save dataset for graph signals
-    file_path_t = './source/data/Claranet/raw/Claranet.pkl'
-    with open(file_path_t, 'wb') as f:
-            pickle.dump(obj=graph_list, file=f, protocol=pickle.HIGHEST_PROTOCOL)
-    print("Saved dataset for diffusion!!")
+    # file_path_t = './source/data/Claranet/raw/Claranet.pkl'
+    # with open(file_path_t, 'wb') as f:
+    #         pickle.dump(obj=graph_list, file=f, protocol=pickle.HIGHEST_PROTOCOL)
+    # print("Saved dataset for diffusion!!")
+    # file_path = './source/data/Claranet/raw/Claranet.pkl'
+    # with open(file_path, 'rb') as f:
+    #     graph_list = pickle.load(f)
+    # print("Load")
 
 
 if __name__ == '__main__':
