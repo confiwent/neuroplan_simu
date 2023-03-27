@@ -19,7 +19,7 @@ class ILP(object):
         self.opt_sol = None
         self.graph = None
 
-    def run_ilp(self, subopt_sol=None, delta_bw=1, relax_factor=1, ilp_solve_limit = -1, mipgap=5e-2):
+    def run_ilp(self, subopt_sol=None, delta_bw=1, relax_factor=1, ilp_solve_limit = -1, thread_num = -1, mipgap=5e-2):
         # ilp_solve_limit = -1
 
         non_direct_graph, init_cost = self.topo.ip.generate_non_direction_graph(1, subopt_sol, relax_factor)
@@ -40,7 +40,7 @@ class ILP(object):
         start_time = time.time()
         (cost_opt, delta_capa_sum, opt_sol) = gurobi_c.ilp_solve_c(non_direct_graph, failed_links_for_spof_list, \
             self.topo.tm.data['all'], self.topo.tm.data['no-bronze'], fiber_info, self.topo.l3node_map_stub, self.topo.load_factor, \
-            delta_bw, ilp_solve_limit, mipgap)
+            delta_bw, ilp_solve_limit, thread_num, mipgap)
         print("ilp_solve result, running time: {} \nfinal_cost:{}, init_cost:{}, delta_cost:{}, delta_capa:{}".format(
             int(time.time()-start_time), cost_opt+init_cost, init_cost, cost_opt, delta_capa_sum), flush=True)
         

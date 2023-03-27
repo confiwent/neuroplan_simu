@@ -280,7 +280,7 @@ std::tuple<bool, int> check(py::object graph, py::list failures, py::dict traffi
 }
 
 std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph, py::list failures, py::dict steady_tm, py::dict failures_tm, py::dict fibers,
-    py::dict node_stub, py::float_ load_factor, unsigned int step_size, long int timelimit, py::float_ mipgap){
+    py::dict node_stub, py::float_ load_factor, unsigned int step_size, long int timelimit, unsigned int thread_num, py::float_ mipgap){
 
     // Create an environment
     GRBEnv env = GRBEnv();
@@ -295,6 +295,11 @@ std::tuple<int, int, std::unordered_map<int, int>> ilp_solve_c(py::object graph,
     GRBModel model = GRBModel(env);
     model.set(GRB_IntParam_DualReductions, 0);
     GRBLinExpr obj = 0.0;
+
+    // Set the used thread number
+    if (thread_num > 0){
+        model.set(GRB_IntParam_Threads, thread_num);
+    }
 
     py::object g = py::module::import("networkx").attr("Graph");
     g = graph;

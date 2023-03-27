@@ -71,7 +71,7 @@ def main():
         alg = "ILP"
         print(f'\n========== Fig8 start, {tm_idx}-{adjust_factor_in}, alg:{alg} ==========\n')
         ilp_solver = ILP(topo=read_topo(data_path, adjust_factor_in=adjust_factor_in))
-        ilp_solver.run_ilp(delta_bw=2, ilp_solve_limit=1000, mipgap=0.1)
+        ilp_solver.run_ilp(delta_bw=2, ilp_solve_limit=1000, thread_num=10, mipgap=0.08)
         print(f'========== Topo: A-{adjust_factor_in}, result: {ilp_solver.cost_opt} =========\n')
         
         # opt_sol = ilp_solver.opt_sol # dict
