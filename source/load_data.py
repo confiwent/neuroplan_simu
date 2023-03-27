@@ -5,10 +5,11 @@ import networkx as nx
 from networkx.readwrite import json_graph
 import math
 from random import sample
+from utils.plot import plot_graphs_list
 
 def main():
     graph_list = []
-    for tm_idx in range(50):
+    for tm_idx in range(150):
         # data_path = load_topo_info(tm_idx)
         # adjust_factor_in = 1
         # alg = "ILP"
@@ -61,6 +62,10 @@ def main():
         except:
             continue
     
+    name_pic = 'Claranet_sample'
+    title = 'Claranet'
+    plot_graphs_list(graph_list, title=title, save_dir=name_pic)
+
     # save dataset for graph signals
     file_path_t = './source/data/Claranet/raw/Claranet.pkl'
     with open(file_path_t, 'wb') as f:
